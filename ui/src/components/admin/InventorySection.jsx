@@ -1,17 +1,13 @@
-import { getStockStatus, getStockStatusClass, adjustInventory } from '../../lib/inventory.js'
+import { getStockStatus, getStockStatusClass } from '../../lib/inventory.js'
 
 /**
  * @param {{
  *   menus: import('../../data/menus.js').MenuItem[]
  *   inventory: Record<string, number>
- *   onInventoryChange: (next: Record<string, number>) => void
+ *   onAdjustInventory: (menuId: string, delta: number) => void
  * }} props
  */
-export function InventorySection({ menus, inventory, onInventoryChange }) {
-  const handleAdjust = (menuId, delta) => {
-    onInventoryChange(adjustInventory(inventory, menuId, delta))
-  }
-
+export function InventorySection({ menus, inventory, onAdjustInventory }) {
   return (
     <section className="admin-section" aria-labelledby="inventory-heading">
       <h2 id="inventory-heading" className="admin-section__title">
@@ -34,7 +30,7 @@ export function InventorySection({ menus, inventory, onInventoryChange }) {
                   type="button"
                   className="btn btn--outline inventory-card__btn"
                   aria-label={`${menu.name} 재고 감소`}
-                  onClick={() => handleAdjust(menu.id, -1)}
+                  onClick={() => onAdjustInventory(menu.id, -1)}
                   disabled={quantity <= 0}
                 >
                   −
@@ -43,7 +39,7 @@ export function InventorySection({ menus, inventory, onInventoryChange }) {
                   type="button"
                   className="btn btn--primary inventory-card__btn"
                   aria-label={`${menu.name} 재고 증가`}
-                  onClick={() => handleAdjust(menu.id, 1)}
+                  onClick={() => onAdjustInventory(menu.id, 1)}
                 >
                   +
                 </button>

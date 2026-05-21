@@ -1,26 +1,22 @@
-import { useState } from 'react'
 import { MENUS } from '../data/menus.js'
-import { addToCart } from '../lib/cart.js'
+import {
+  canAddMenuToCart,
+  getMenuStock,
+  getStockStatus,
+  isInventoryTracked,
+} from '../lib/inventory.js'
 import { ProductCard } from '../components/ProductCard.jsx'
 import { Cart } from '../components/Cart.jsx'
 
 /**
- * @param {{ onPlaceOrder: (cart: import('../lib/cart.js').CartLine[]) => void }} props
+ * @param {{
+ *   cart: import('../lib/cart.js').CartLine[]
+ *   inventory: Record<string, number>
+ *   onAddToCart: (menu: import('../data/menus.js').MenuItem, selectedOptionIds: string[]) => void
+ *   onPlaceOrder: () => void
+ * }} props
  */
-export function OrderPage({ onPlaceOrder }) {
-  const [cart, setCart] = useState([])
-
-  const handleAddToCart = (menu, selectedOptionIds) => {
-    setCart((prev) => addToCart(prev, menu, selectedOptionIds))
-  }
-
-  const handleOrder = () => {
-    if (cart.length === 0) return
-    onPlaceOrder(cart)
-    alert('주문이 접수되었습니다.')
-    setCart([])
-  }
-
+export function OrderPage({ cart, inventory, onAddToCart, onPlaceOrder }) {
   return (
     <main className="order-page">
       <section className="menu-section" aria-labelledby="menu-heading">
@@ -28,12 +24,28 @@ export function OrderPage({ onPlaceOrder }) {
           메뉴
         </h2>
         <div className="menu-grid">
-          {MENUS.map((menu) => (
-            <ProductCard key={menu.id} menu={menu} onAdd={handleAddToCart} />
-          ))}
+          {MENUS.map((menu) => {
+            const tracked = isInventoryTracked(menu.id)
+            const stock = getMenuStock(inventory, menu.id)
+            const stockStatus = tracked && stock !== null ? getStockStatus(stock) : null
+            const soldOut = tracked && stock === 0
+            const canAdd = canAddMenuToCart(inventory, cart, menu.id)
+
+            return (
+              <ProductCard
+                key={menu.id}
+                menu={menu}
+                stock={stock}
+                stockStatus={stockStatus}
+                soldOut={soldOut}
+                canAdd={canAdd}
+                onAdd={onAddToCart}
+              />
+            )
+          })}
         </div>
       </section>
-      <Cart cart={cart} onOrder={handleOrder} />
+      <Cart cart={cart} onOrder={onPlaceOrder} />
     </main>
   )
 }

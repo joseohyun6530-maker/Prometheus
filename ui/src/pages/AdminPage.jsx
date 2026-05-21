@@ -9,22 +9,18 @@ import { OrderListSection } from '../components/admin/OrderListSection.jsx'
  * @param {{
  *   orders: import('../lib/orders.js').Order[]
  *   inventory: Record<string, number>
- *   onInventoryChange: (next: Record<string, number>) => void
+ *   onAdjustInventory: (menuId: string, delta: number) => void
  *   onStartPreparation: (orderId: string) => void
  * }} props
  */
-export function AdminPage({ orders, inventory, onInventoryChange, onStartPreparation }) {
+export function AdminPage({ orders, inventory, onAdjustInventory, onStartPreparation }) {
   const stats = useMemo(() => calcDashboardStats(orders), [orders])
   const activeOrders = useMemo(() => getActiveOrders(orders), [orders])
 
   return (
     <main className="admin-page">
       <AdminDashboard stats={stats} />
-      <InventorySection
-        menus={INVENTORY_MENUS}
-        inventory={inventory}
-        onInventoryChange={onInventoryChange}
-      />
+      <InventorySection menus={INVENTORY_MENUS} inventory={inventory} onAdjustInventory={onAdjustInventory} />
       <OrderListSection orders={activeOrders} onStartPreparation={onStartPreparation} />
     </main>
   )
