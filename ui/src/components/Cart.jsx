@@ -2,9 +2,13 @@ import { calcCartTotal, formatOptionSuffix } from '../lib/cart.js'
 import { formatPrice } from '../lib/format.js'
 
 /**
- * @param {{ cart: import('../lib/cart.js').CartLine[]; onOrder: () => void }} props
+ * @param {{
+ *   cart: import('../lib/cart.js').CartLine[]
+ *   onOrder: () => void
+ *   onChangeQuantity: (lineKey: string, delta: number) => void
+ * }} props
  */
-export function Cart({ cart, onOrder }) {
+export function Cart({ cart, onOrder, onChangeQuantity }) {
   const total = calcCartTotal(cart)
   const isEmpty = cart.length === 0
 
@@ -21,10 +25,33 @@ export function Cart({ cart, onOrder }) {
             <ul className="cart__list">
               {cart.map((line) => (
                 <li key={line.key} className="cart__line">
-                  <span className="cart__line-name">
-                    {line.name}
-                    {formatOptionSuffix(line.selectedOptions)} x {line.quantity}
-                  </span>
+                  <div className="cart__line-info">
+                    <span className="cart__line-name">
+                      {line.name}
+                      {formatOptionSuffix(line.selectedOptions)}
+                    </span>
+                  </div>
+                  <div className="cart__line-qty">
+                    <button
+                      type="button"
+                      className="btn btn--outline cart__qty-btn"
+                      aria-label={`${line.name} 수량 감소`}
+                      onClick={() => onChangeQuantity(line.key, -1)}
+                    >
+                      −
+                    </button>
+                    <span className="cart__qty-value" aria-label="수량">
+                      {line.quantity}
+                    </span>
+                    <button
+                      type="button"
+                      className="btn btn--outline cart__qty-btn"
+                      aria-label={`${line.name} 수량 증가`}
+                      onClick={() => onChangeQuantity(line.key, 1)}
+                    >
+                      +
+                    </button>
+                  </div>
                   <span className="cart__line-price">{formatPrice(line.lineTotal)}</span>
                 </li>
               ))}

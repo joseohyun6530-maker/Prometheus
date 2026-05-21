@@ -1,7 +1,7 @@
-import { INITIAL_INVENTORY } from '../data/inventoryMenus.js'
+import { INVENTORY_MENU_IDS } from '../data/inventoryMenus.js'
 
 /** @type {Set<string>} */
-const TRACKED_MENU_IDS = new Set(Object.keys(INITIAL_INVENTORY))
+const TRACKED_MENU_IDS = new Set(INVENTORY_MENU_IDS)
 
 /**
  * @param {string} menuId
@@ -21,7 +21,7 @@ export function getStockStatus(quantity) {
 }
 
 /**
- * @param {'정상' | '주의' | '품절'} status
+ * @param {'정상' | '주의' | '품절' | string} status
  */
 export function getStockStatusClass(status) {
   if (status === '품절') return 'stock-badge--soldout'

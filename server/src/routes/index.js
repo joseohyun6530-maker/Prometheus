@@ -1,8 +1,12 @@
 import { Router } from 'express'
 import { healthRouter } from './health.js'
+import { menusRouter } from './menus.js'
+import { ordersRouter } from './orders.js'
+import { adminRouter } from './admin.js'
 
 export const apiRouter = Router()
 
 apiRouter.use(healthRouter)
-
-// TODO: menus, orders, admin routes (docs/PRD.md Part 2)
+apiRouter.use(menusRouter)
+apiRouter.use(ordersRouter)
+apiRouter.use(adminRouter)

@@ -1,17 +1,13 @@
 import { formatPrice } from '../../lib/format.js'
-import {
-  formatOrderDateTime,
-  formatOrderLineLabel,
-  ORDER_STATUS_LABEL,
-} from '../../lib/orders.js'
+import { formatOrderDateTime, formatOrderLineLabel, ORDER_STATUS_LABEL } from '../../lib/orders.js'
 
 /**
  * @param {{
  *   orders: import('../../lib/orders.js').Order[]
- *   onStartPreparation: (orderId: string) => void
+ *   onUpdateStatus: (orderId: string, status: 'IN_PREPARATION' | 'COMPLETED') => void
  * }} props
  */
-export function OrderListSection({ orders, onStartPreparation }) {
+export function OrderListSection({ orders, onUpdateStatus }) {
   return (
     <section className="admin-section" aria-labelledby="orders-heading">
       <h2 id="orders-heading" className="admin-section__title">
@@ -29,7 +25,11 @@ export function OrderListSection({ orders, onStartPreparation }) {
                 </time>
                 <span
                   className={`order-status order-status--${
-                    order.status === 'IN_PREPARATION' ? 'preparing' : order.status === 'RECEIVED' ? 'received' : 'completed'
+                    order.status === 'IN_PREPARATION'
+                      ? 'preparing'
+                      : order.status === 'RECEIVED'
+                        ? 'received'
+                        : 'completed'
                   }`}
                 >
                   {ORDER_STATUS_LABEL[order.status]}
@@ -49,10 +49,19 @@ export function OrderListSection({ orders, onStartPreparation }) {
                 {order.status === 'RECEIVED' && (
                   <button
                     type="button"
-                    className="btn btn--primary order-card__action"
-                    onClick={() => onStartPreparation(order.id)}
+                    className="btn btn--primary btn--order-action"
+                    onClick={() => onUpdateStatus(order.id, 'IN_PREPARATION')}
                   >
                     제조 시작
+                  </button>
+                )}
+                {order.status === 'IN_PREPARATION' && (
+                  <button
+                    type="button"
+                    className="btn btn--primary btn--order-action"
+                    onClick={() => onUpdateStatus(order.id, 'COMPLETED')}
+                  >
+                    제조 완료
                   </button>
                 )}
               </div>

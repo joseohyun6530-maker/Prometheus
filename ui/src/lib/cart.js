@@ -91,3 +91,24 @@ export function addToCart(cart, menu, selectedOptionIds) {
 export function calcCartTotal(cart) {
   return cart.reduce((sum, line) => sum + line.lineTotal, 0)
 }
+
+/**
+ * @param {CartLine[]} cart
+ * @param {string} lineKey
+ * @param {number} delta
+ * @returns {CartLine[]}
+ */
+export function updateCartLineQuantity(cart, lineKey, delta) {
+  return cart
+    .map((line) => {
+      if (line.key !== lineKey) return line
+      const quantity = line.quantity + delta
+      if (quantity <= 0) return null
+      return {
+        ...line,
+        quantity,
+        lineTotal: line.unitPrice * quantity,
+      }
+    })
+    .filter(Boolean)
+}

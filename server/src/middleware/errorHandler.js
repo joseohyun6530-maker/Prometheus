@@ -1,3 +1,5 @@
+import { ApiError } from '../errors/ApiError.js'
+
 /**
  * @param {import('express').Request} _req
  * @param {import('express').Response} res
@@ -18,6 +20,15 @@ export function notFoundHandler(_req, res) {
  * @param {import('express').NextFunction} _next
  */
 export function errorHandler(err, _req, res, _next) {
+  if (err instanceof ApiError) {
+    return res.status(err.status).json({
+      error: {
+        code: err.code,
+        message: err.message,
+      },
+    })
+  }
+
   console.error(err)
   res.status(500).json({
     error: {
