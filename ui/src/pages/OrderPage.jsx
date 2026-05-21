@@ -4,7 +4,10 @@ import { addToCart } from '../lib/cart.js'
 import { ProductCard } from '../components/ProductCard.jsx'
 import { Cart } from '../components/Cart.jsx'
 
-export function OrderPage() {
+/**
+ * @param {{ onPlaceOrder: (cart: import('../lib/cart.js').CartLine[]) => void }} props
+ */
+export function OrderPage({ onPlaceOrder }) {
   const [cart, setCart] = useState([])
 
   const handleAddToCart = (menu, selectedOptionIds) => {
@@ -13,6 +16,7 @@ export function OrderPage() {
 
   const handleOrder = () => {
     if (cart.length === 0) return
+    onPlaceOrder(cart)
     alert('주문이 접수되었습니다.')
     setCart([])
   }
