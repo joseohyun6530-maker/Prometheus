@@ -30,8 +30,14 @@ export function ProductCard({ menu, stock, stockStatus, soldOut, canAdd, onAdd }
 
   return (
     <article className={`product-card ${soldOut ? 'product-card--soldout' : ''}`}>
-      <div className="product-card__image" aria-hidden="true">
-        <span className="product-card__placeholder">×</span>
+      <div className="product-card__image">
+        {menu.imageUrl ? (
+          <img src={menu.imageUrl} alt={menu.name} className="product-card__img" />
+        ) : (
+          <span className="product-card__placeholder" aria-hidden="true">
+            ×
+          </span>
+        )}
       </div>
       <div className="product-card__head">
         <h3 className="product-card__name">{menu.name}</h3>

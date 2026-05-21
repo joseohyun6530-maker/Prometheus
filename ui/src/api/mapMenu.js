@@ -8,6 +8,7 @@ export function mapApiMenuToMenuItem(apiMenu) {
     name: apiMenu.name,
     basePrice: apiMenu.price,
     description: apiMenu.description,
+    imageUrl: apiMenu.image_url,
     options: apiMenu.options.map((opt) => ({
       id: opt.id,
       label: opt.name,

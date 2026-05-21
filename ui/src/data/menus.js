@@ -1,5 +1,5 @@
 /** @typedef {{ id: string; label: string; extraPrice: number }} MenuOption */
-/** @typedef {{ id: string; name: string; basePrice: number; description: string; options: MenuOption[] }} MenuItem */
+/** @typedef {{ id: string; name: string; basePrice: number; description: string; imageUrl?: string | null; options: MenuOption[] }} MenuItem */
 
 /** @type {MenuItem[]} */
 export const MENUS = [
