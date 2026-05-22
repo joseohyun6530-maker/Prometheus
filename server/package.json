@@ -11,6 +11,9 @@
     "db:migrate": "node src/db/migrate.js",
     "db:update-images": "node src/db/updateMenuImages.js"
   },
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",

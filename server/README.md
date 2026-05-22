@@ -21,12 +21,39 @@ npm install
 copy .env.example .env
 ```
 
-| 변수 | 기본값 | 설명 |
-|------|--------|------|
-| `PORT` | `3000` | 서버 포트 |
-| `NODE_ENV` | `development` | 실행 환경 |
-| `CORS_ORIGIN` | `http://localhost:5173` | Vite 프런트 허용 origin |
-| `DATABASE_URL` | `postgresql://postgres:postgres@localhost:5432/cozy` | PostgreSQL 연결 문자열 |
+| 변수 | 로컬 | 배포 시 | 설명 |
+|------|------|---------|------|
+| `PORT` | `3000` | 호스트가 자동 설정하는 경우 **등록하지 않음** | 서버 포트 |
+| `NODE_ENV` | (선택) | 호스트가 `production`으로 넣는 경우 **중복 등록 금지** | `Duplicate key 'NODE_ENV'` 오류 원인 |
+| `CORS_ORIGIN` | `http://localhost:5173` | **필수** — 배포된 프런트 URL | 쉼표로 여러 origin 가능 |
+| `DATABASE_URL` | 로컬 DB URL | **필수** — 배포 DB URL | PostgreSQL 연결 문자열 |
+
+### 배포 시 환경 변수 (대시보드)
+
+호스트(Render, Railway 등)에 **키당 한 줄**만 등록합니다. `Add from .env`로 붙여넣을 때 `NODE_ENV`가 두 번 들어가면 저장이 거부됩니다.
+
+| 키 | 값 예시 |
+|----|---------|
+| `DATABASE_URL` | `postgresql://user:pass@host:5432/cozy` |
+| `CORS_ORIGIN` | `https://your-app.vercel.app` (로컬도 허용하려면 `https://...,http://localhost:5173`) |
+
+`NODE_ENV`, `PORT`는 플랫폼 기본값이 있으면 **추가하지 마세요**. 잘못된 키(예: `kal`)는 삭제합니다.
+
+### Render 배포 설정
+
+| 항목 | 값 |
+|------|-----|
+| **Root Directory** | `server` |
+| **Build Command** | `npm install && npm run db:migrate` |
+| **Start Command** | `npm start` |
+
+또는 저장소 루트의 `render.yaml` Blueprint를 사용합니다.
+
+**`Exited with status 1`이 나올 때**
+
+1. `DATABASE_URL`이 Render PostgreSQL **Internal/External URL**로 설정됐는지 확인
+2. Build 단계에서 `db:migrate`가 성공했는지 로그 확인 (테이블 없으면 API 시작 시 종료)
+3. Root Directory가 `server`가 아니면 `npm start`가 실패함
 
 ## PostgreSQL 설정
 

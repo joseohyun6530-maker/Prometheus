@@ -5,6 +5,7 @@ import pg from 'pg'
 import { config } from '../config.js'
 import { SEED_MENUS } from './seedData.js'
 import { closePool, getPool, query } from './pool.js'
+import { isManagedPostgres, resolvePgSsl } from './ssl.js'
 
 const { Client } = pg
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -17,11 +18,20 @@ function parseDbName(connectionString) {
 }
 
 async function ensureDatabase() {
+  if (isManagedPostgres(config.databaseUrl)) {
+    console.log('Managed PostgreSQL: skipping CREATE DATABASE step.')
+    return
+  }
+
   const { url, name } = parseDbName(config.databaseUrl)
   const adminUrl = new URL(url.toString())
   adminUrl.pathname = '/postgres'
 
-  const client = new Client({ connectionString: adminUrl.toString() })
+  const adminConn = adminUrl.toString()
+  const client = new Client({
+    connectionString: adminConn,
+    ssl: resolvePgSsl(adminConn),
+  })
   await client.connect()
 
   const exists = await client.query('SELECT 1 FROM pg_database WHERE datname = $1', [name])
