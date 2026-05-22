@@ -9,10 +9,19 @@ import { getStockStatusClass } from '../lib/inventory.js'
  *   stockStatus: '정상' | '주의' | '품절' | null
  *   soldOut: boolean
  *   canAdd: boolean
+ *   showStockBadge?: boolean
  *   onAdd: (menu: import('../data/menus.js').MenuItem, selectedOptionIds: string[]) => void
  * }} props
  */
-export function ProductCard({ menu, stock, stockStatus, soldOut, canAdd, onAdd }) {
+export function ProductCard({
+  menu,
+  stock,
+  stockStatus,
+  soldOut,
+  canAdd,
+  showStockBadge = true,
+  onAdd,
+}) {
   const [selectedOptionIds, setSelectedOptionIds] = useState([])
 
   const toggleOption = (optionId) => {
@@ -41,7 +50,7 @@ export function ProductCard({ menu, stock, stockStatus, soldOut, canAdd, onAdd }
       </div>
       <div className="product-card__head">
         <h3 className="product-card__name">{menu.name}</h3>
-        {stockStatus && stock !== null && (
+        {showStockBadge && stockStatus && stock !== null && (
           <span className={`stock-badge ${getStockStatusClass(stockStatus)}`}>
             {stockStatus} · {stock}개
           </span>

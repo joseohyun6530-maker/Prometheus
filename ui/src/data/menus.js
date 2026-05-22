@@ -1,37 +1,39 @@
 /** @typedef {{ id: string; label: string; extraPrice: number }} MenuOption */
 /** @typedef {{ id: string; name: string; basePrice: number; description: string; imageUrl?: string | null; options: MenuOption[] }} MenuItem */
 
+/** 주문하기 화면(와이어프레임)에 표시할 메뉴 ID */
+export const ORDER_SCREEN_MENU_IDS = ['americano-ice', 'americano-hot', 'cafe-latte']
+
+const DEFAULT_OPTIONS = [
+  { id: 'extra-shot', label: '샷 추가', extraPrice: 500 },
+  { id: 'extra-syrup', label: '시럽 추가', extraPrice: 0 },
+]
+
 /** @type {MenuItem[]} */
 export const MENUS = [
   {
     id: 'americano-ice',
     name: '아메리카노(ICE)',
     basePrice: 4000,
-    description: '시원하고 깔끔한 아이스 아메리카노',
-    options: [
-      { id: 'extra-shot', label: '샷 추가', extraPrice: 500 },
-      { id: 'extra-syrup', label: '시럽 추가', extraPrice: 0 },
-    ],
+    description: '간단한 설명...',
+    imageUrl: '/americano-ice.png',
+    options: DEFAULT_OPTIONS,
   },
   {
     id: 'americano-hot',
     name: '아메리카노(HOT)',
     basePrice: 4000,
-    description: '고소한 원두 향의 핫 아메리카노',
-    options: [
-      { id: 'extra-shot', label: '샷 추가', extraPrice: 500 },
-      { id: 'extra-syrup', label: '시럽 추가', extraPrice: 0 },
-    ],
+    description: '간단한 설명...',
+    imageUrl: '/americano-hot.png',
+    options: DEFAULT_OPTIONS,
   },
   {
     id: 'cafe-latte',
     name: '카페라떼',
     basePrice: 5000,
-    description: '부드러운 우유와 에스프레소의 조화',
-    options: [
-      { id: 'extra-shot', label: '샷 추가', extraPrice: 500 },
-      { id: 'extra-syrup', label: '시럽 추가', extraPrice: 0 },
-    ],
+    description: '간단한 설명...',
+    imageUrl: '/caffe-latte.png',
+    options: DEFAULT_OPTIONS,
   },
   {
     id: 'vanilla-latte',
@@ -64,3 +66,18 @@ export const MENUS = [
     ],
   },
 ]
+
+/** @param {MenuItem[]} menus */
+export function getOrderScreenMenus(menus) {
+  const byId = new Map(menus.map((m) => [m.id, m]))
+  const fromApi = ORDER_SCREEN_MENU_IDS.map((id) => byId.get(id)).filter(Boolean)
+  if (fromApi.length > 0) return fromApi
+  return MENUS.filter((m) => ORDER_SCREEN_MENU_IDS.includes(m.id))
+}
+
+/** API 실패 시 사용할 기본 재고 */
+export const DEFAULT_ORDER_INVENTORY = {
+  'americano-ice': 10,
+  'americano-hot': 10,
+  'cafe-latte': 10,
+}

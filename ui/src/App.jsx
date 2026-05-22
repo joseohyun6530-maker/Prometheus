@@ -6,12 +6,9 @@ import { createOrder } from './api/orders.js'
 import { Header } from './components/Header.jsx'
 import { OrderPage } from './pages/OrderPage.jsx'
 import { AdminPage } from './pages/AdminPage.jsx'
-import { addToCart, updateCartLineQuantity } from './lib/cart.js'
-import {
-  canAddMenuToCart,
-  canChangeCartLineQuantity,
-  validateCartAgainstInventory,
-} from './lib/inventory.js'
+import { DEFAULT_ORDER_INVENTORY, MENUS } from './data/menus.js'
+import { addToCart } from './lib/cart.js'
+import { canAddMenuToCart, validateCartAgainstInventory } from './lib/inventory.js'
 import { getActiveOrders } from './lib/orders.js'
 import './App.css'
 
@@ -77,7 +74,15 @@ function App() {
         setError(null)
       })
       .catch((err) => {
-        if (!cancelled) setError(err instanceof Error ? err.message : '메뉴 로드 실패')
+        if (!cancelled) {
+          setMenus(MENUS)
+          setInventory({ ...DEFAULT_ORDER_INVENTORY })
+          setError(
+            err instanceof Error
+              ? `${err.message} (로컬 메뉴로 표시 중)`
+              : '메뉴 로드 실패 (로컬 메뉴로 표시 중)',
+          )
+        }
       })
       .finally(() => {
         if (!cancelled) setOrderLoading(false)
@@ -102,18 +107,6 @@ function App() {
         .finally(() => setAdminLoadState('done'))
     },
     [loadAdmin],
-  )
-
-  const handleChangeQuantity = useCallback(
-    (lineKey, delta) => {
-      setCart((prev) => {
-        if (!canChangeCartLineQuantity(inventory, prev, lineKey, delta)) {
-          return prev
-        }
-        return updateCartLineQuantity(prev, lineKey, delta)
-      })
-    },
-    [inventory],
   )
 
   const handleAddToCart = useCallback(
@@ -191,7 +184,6 @@ function App() {
           loading={orderLoading}
           onAddToCart={handleAddToCart}
           onPlaceOrder={handlePlaceOrder}
-          onChangeQuantity={handleChangeQuantity}
         />
       </div>
       <div className={page === 'admin' ? 'app__page app__page--active' : 'app__page app__page--hidden'}>
