@@ -7,7 +7,11 @@ import { Header } from './components/Header.jsx'
 import { OrderPage } from './pages/OrderPage.jsx'
 import { AdminPage } from './pages/AdminPage.jsx'
 import { addToCart, updateCartLineQuantity } from './lib/cart.js'
-import { canAddMenuToCart } from './lib/inventory.js'
+import {
+  canAddMenuToCart,
+  canChangeCartLineQuantity,
+  validateCartAgainstInventory,
+} from './lib/inventory.js'
 import { getActiveOrders } from './lib/orders.js'
 import './App.css'
 
@@ -22,7 +26,7 @@ function App() {
   const [dashboard, setDashboard] = useState(EMPTY_DASHBOARD)
   const [inventoryItems, setInventoryItems] = useState([])
   const [orderLoading, setOrderLoading] = useState(true)
-  const [adminLoading, setAdminLoading] = useState(false)
+  const [adminLoadState, setAdminLoadState] = useState('idle')
   const [error, setError] = useState(null)
 
   useEffect(() => {
@@ -63,22 +67,54 @@ function App() {
   }, [])
 
   useEffect(() => {
-    loadMenus()
-      .catch((err) => setError(err.message))
-      .finally(() => setOrderLoading(false))
-  }, [loadMenus])
+    let cancelled = false
 
-  useEffect(() => {
-    if (page !== 'admin') return
-    setAdminLoading(true)
-    loadAdmin()
-      .catch((err) => setError(err.message))
-      .finally(() => setAdminLoading(false))
-  }, [page, loadAdmin])
+    fetchMenus()
+      .then((data) => {
+        if (cancelled) return
+        setMenus(data.menus.map(mapApiMenuToMenuItem))
+        setInventory(buildInventoryFromMenus(data.menus))
+        setError(null)
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err instanceof Error ? err.message : '메뉴 로드 실패')
+      })
+      .finally(() => {
+        if (!cancelled) setOrderLoading(false)
+      })
 
-  const handleChangeQuantity = useCallback((lineKey, delta) => {
-    setCart((prev) => updateCartLineQuantity(prev, lineKey, delta))
+    return () => {
+      cancelled = true
+    }
   }, [])
+
+  const handleNavigate = useCallback(
+    (next) => {
+      setPage(next)
+      if (next !== 'admin') return
+
+      setAdminLoadState('loading')
+      loadAdmin()
+        .then(() => setError(null))
+        .catch((err) =>
+          setError(err instanceof Error ? err.message : '관리자 데이터 로드 실패'),
+        )
+        .finally(() => setAdminLoadState('done'))
+    },
+    [loadAdmin],
+  )
+
+  const handleChangeQuantity = useCallback(
+    (lineKey, delta) => {
+      setCart((prev) => {
+        if (!canChangeCartLineQuantity(inventory, prev, lineKey, delta)) {
+          return prev
+        }
+        return updateCartLineQuantity(prev, lineKey, delta)
+      })
+    },
+    [inventory],
+  )
 
   const handleAddToCart = useCallback(
     (menu, selectedOptionIds) => {
@@ -95,6 +131,12 @@ function App() {
   const handlePlaceOrder = useCallback(async () => {
     if (cart.length === 0) return
 
+    const validation = validateCartAgainstInventory(inventory, cart)
+    if (!validation.ok) {
+      alert(validation.message)
+      return
+    }
+
     try {
       const items = cart.map((line) => ({
         menu_id: line.menuId,
@@ -109,7 +151,7 @@ function App() {
     } catch (err) {
       alert(err instanceof Error ? err.message : '주문에 실패했습니다.')
     }
-  }, [cart, loadMenus, loadAdmin, page])
+  }, [cart, inventory, loadMenus, loadAdmin, page])
 
   const handleAdjustInventory = useCallback(
     async (menuId, delta) => {
@@ -139,7 +181,7 @@ function App() {
 
   return (
     <div className="app">
-      <Header activePage={page} onNavigate={setPage} />
+      <Header activePage={page} onNavigate={handleNavigate} />
       {error && <p className="app-error">{error}</p>}
       <div className={page === 'order' ? 'app__page app__page--active' : 'app__page app__page--hidden'}>
         <OrderPage
@@ -157,7 +199,7 @@ function App() {
           dashboard={dashboard}
           inventoryItems={inventoryItems}
           orders={activeOrders}
-          loading={adminLoading}
+          loading={page === 'admin' && adminLoadState === 'loading'}
           onAdjustInventory={handleAdjustInventory}
           onUpdateOrderStatus={handleUpdateOrderStatus}
         />

@@ -5,11 +5,10 @@ import { fileURLToPath } from 'url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const envPath = path.resolve(__dirname, '../.env')
 
-// 배포 환경은 호스트가 변수를 주입하므로 .env 파일은 로컬에서만 로드
+// .env는 로컬 기본값용 — 이미 설정된 환경 변수(배포 대시보드)는 덮어쓰지 않음
+dotenv.config({ path: envPath, override: false })
+
 const isProduction = process.env.NODE_ENV === 'production'
-if (!isProduction) {
-  dotenv.config({ path: envPath })
-}
 
 /**
  * @param {string | undefined} raw

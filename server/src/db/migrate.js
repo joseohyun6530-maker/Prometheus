@@ -50,17 +50,26 @@ async function runSchema() {
   console.log('Schema applied.')
 }
 
+/** @type {Record<string, string>} */
+const MENU_IMAGE_URLS = {
+  'americano-ice': '/americano-ice.png',
+  'americano-hot': '/americano-hot.png',
+  'cafe-latte': '/caffe-latte.png',
+}
+
 async function runSeed() {
   for (const menu of SEED_MENUS) {
+    const imageUrl = MENU_IMAGE_URLS[menu.id] ?? null
     await query(
-      `INSERT INTO menus (id, name, description, price, stock_quantity)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO menus (id, name, description, price, stock_quantity, image_url)
+       VALUES ($1, $2, $3, $4, $5, $6)
        ON CONFLICT (id) DO UPDATE SET
          name = EXCLUDED.name,
          description = EXCLUDED.description,
          price = EXCLUDED.price,
+         image_url = COALESCE(EXCLUDED.image_url, menus.image_url),
          updated_at = NOW()`,
-      [menu.id, menu.name, menu.description, menu.price, menu.stock_quantity],
+      [menu.id, menu.name, menu.description, menu.price, menu.stock_quantity, imageUrl],
     )
 
     for (const option of menu.options) {

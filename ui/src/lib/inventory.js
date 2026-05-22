@@ -61,6 +61,21 @@ export function canAddMenuToCart(inventory, cart, menuId) {
 
 /**
  * @param {Record<string, number>} inventory
+ * @param {import('./cart.js').CartLine[]} cart
+ * @param {string} lineKey
+ * @param {number} delta
+ */
+export function canChangeCartLineQuantity(inventory, cart, lineKey, delta) {
+  if (delta <= 0) return true
+  const line = cart.find((l) => l.key === lineKey)
+  if (!line) return false
+  const stock = getMenuStock(inventory, line.menuId)
+  if (stock === null) return true
+  return getCartQuantityForMenu(cart, line.menuId) + delta <= stock
+}
+
+/**
+ * @param {Record<string, number>} inventory
  * @param {string} menuId
  * @param {number} delta
  * @returns {Record<string, number>}

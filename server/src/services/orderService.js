@@ -212,7 +212,11 @@ export async function createOrder(items) {
     await client.query('COMMIT')
     return await fetchOrderRows(orderId, client)
   } catch (err) {
-    await client.query('ROLLBACK')
+    try {
+      await client.query('ROLLBACK')
+    } catch {
+      // 트랜잭션이 없을 때 ROLLBACK 실패는 무시
+    }
     throw err
   } finally {
     client.release()
@@ -290,7 +294,11 @@ export async function updateOrderStatus(orderId, nextStatus) {
 
     return await fetchOrderRows(orderId, client)
   } catch (err) {
-    await client.query('ROLLBACK')
+    try {
+      await client.query('ROLLBACK')
+    } catch {
+      // 트랜잭션이 없을 때 ROLLBACK 실패는 무시
+    }
     throw err
   } finally {
     client.release()

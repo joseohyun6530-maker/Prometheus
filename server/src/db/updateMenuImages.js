@@ -1,5 +1,6 @@
 import { query, closePool } from './pool.js'
 
+/** @type {Array<{ id: string; image_url: string }>} */
 const IMAGE_UPDATES = [
   { id: 'americano-ice', image_url: '/americano-ice.png' },
   { id: 'americano-hot', image_url: '/americano-hot.png' },
