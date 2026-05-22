@@ -1,18 +1,33 @@
 import { useCallback, useEffect, useState } from 'react'
 import { fetchInventory, fetchAdminOrders, patchInventory, patchOrderStatus } from './api/admin.js'
+import { formatFetchError } from './api/errors.js'
+import { mapApiOrderToOrder } from './api/mapOrder.js'
 import { buildInventoryFromMenus, mapApiMenuToMenuItem } from './api/mapMenu.js'
 import { fetchMenus } from './api/menus.js'
 import { createOrder } from './api/orders.js'
 import { Header } from './components/Header.jsx'
 import { OrderPage } from './pages/OrderPage.jsx'
 import { AdminPage } from './pages/AdminPage.jsx'
-import { DEFAULT_ORDER_INVENTORY, MENUS } from './data/menus.js'
+import {
+  getDemoAdminState,
+  getDemoOrderState,
+  OFFLINE_ACTION_MESSAGE,
+  OFFLINE_NOTICE,
+} from './lib/demoData.js'
 import { addToCart } from './lib/cart.js'
 import { canAddMenuToCart, validateCartAgainstInventory } from './lib/inventory.js'
 import { getActiveOrders } from './lib/orders.js'
 import './App.css'
 
 const EMPTY_DASHBOARD = { total: 0, received: 0, inPreparation: 0, completed: 0 }
+
+function applyDemoAdminState(setters) {
+  const demo = getDemoAdminState()
+  setters.setOrders(demo.orders)
+  setters.setDashboard(demo.dashboard)
+  setters.setInventoryItems(demo.inventoryItems)
+  setters.setInventory((prev) => ({ ...prev, ...demo.inventory }))
+}
 
 function App() {
   const [page, setPage] = useState('order')
@@ -24,7 +39,8 @@ function App() {
   const [inventoryItems, setInventoryItems] = useState([])
   const [orderLoading, setOrderLoading] = useState(true)
   const [adminLoadState, setAdminLoadState] = useState('idle')
-  const [error, setError] = useState(null)
+  const [apiOnline, setApiOnline] = useState(false)
+  const [notice, setNotice] = useState(null)
 
   useEffect(() => {
     document.title = 'COZY - 커피 주문 앱'
@@ -34,6 +50,8 @@ function App() {
     const data = await fetchMenus()
     setMenus(data.menus.map(mapApiMenuToMenuItem))
     setInventory(buildInventoryFromMenus(data.menus))
+    setApiOnline(true)
+    setNotice(null)
   }, [])
 
   const loadAdmin = useCallback(async () => {
@@ -41,7 +59,7 @@ function App() {
       fetchAdminOrders(),
       fetchInventory(),
     ])
-    setOrders(ordersData.orders)
+    setOrders(ordersData.orders.map(mapApiOrderToOrder))
     setDashboard({
       total: ordersData.dashboard.total,
       received: ordersData.dashboard.received,
@@ -61,6 +79,26 @@ function App() {
       }
       return next
     })
+    setApiOnline(true)
+    setNotice(null)
+  }, [])
+
+  const enterOfflineMode = useCallback((applyOrderDemo, applyAdminDemo) => {
+    setApiOnline(false)
+    setNotice(OFFLINE_NOTICE)
+    if (applyOrderDemo) {
+      const demo = getDemoOrderState()
+      setMenus(demo.menus)
+      setInventory(demo.inventory)
+    }
+    if (applyAdminDemo) {
+      applyDemoAdminState({
+        setOrders,
+        setDashboard,
+        setInventoryItems,
+        setInventory,
+      })
+    }
   }, [])
 
   useEffect(() => {
@@ -71,18 +109,11 @@ function App() {
         if (cancelled) return
         setMenus(data.menus.map(mapApiMenuToMenuItem))
         setInventory(buildInventoryFromMenus(data.menus))
-        setError(null)
+        setApiOnline(true)
+        setNotice(null)
       })
-      .catch((err) => {
-        if (!cancelled) {
-          setMenus(MENUS)
-          setInventory({ ...DEFAULT_ORDER_INVENTORY })
-          setError(
-            err instanceof Error
-              ? `${err.message} (로컬 메뉴로 표시 중)`
-              : '메뉴 로드 실패 (로컬 메뉴로 표시 중)',
-          )
-        }
+      .catch(() => {
+        if (!cancelled) enterOfflineMode(true, false)
       })
       .finally(() => {
         if (!cancelled) setOrderLoading(false)
@@ -91,7 +122,7 @@ function App() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [enterOfflineMode])
 
   const handleNavigate = useCallback(
     (next) => {
@@ -100,13 +131,10 @@ function App() {
 
       setAdminLoadState('loading')
       loadAdmin()
-        .then(() => setError(null))
-        .catch((err) =>
-          setError(err instanceof Error ? err.message : '관리자 데이터 로드 실패'),
-        )
+        .catch(() => enterOfflineMode(false, true))
         .finally(() => setAdminLoadState('done'))
     },
-    [loadAdmin],
+    [loadAdmin, enterOfflineMode],
   )
 
   const handleAddToCart = useCallback(
@@ -123,6 +151,11 @@ function App() {
 
   const handlePlaceOrder = useCallback(async () => {
     if (cart.length === 0) return
+
+    if (!apiOnline) {
+      alert(OFFLINE_ACTION_MESSAGE)
+      return
+    }
 
     const validation = validateCartAgainstInventory(inventory, cart)
     if (!validation.ok) {
@@ -142,32 +175,42 @@ function App() {
       await loadMenus()
       if (page === 'admin') await loadAdmin()
     } catch (err) {
-      alert(err instanceof Error ? err.message : '주문에 실패했습니다.')
+      alert(formatFetchError(err))
     }
-  }, [cart, inventory, loadMenus, loadAdmin, page])
+  }, [cart, inventory, loadMenus, loadAdmin, page, apiOnline])
 
   const handleAdjustInventory = useCallback(
     async (menuId, delta) => {
+      if (!apiOnline) {
+        alert(OFFLINE_ACTION_MESSAGE)
+        return
+      }
+
       try {
         await patchInventory(menuId, delta)
         await Promise.all([loadMenus(), loadAdmin()])
       } catch (err) {
-        alert(err instanceof Error ? err.message : '재고 수정에 실패했습니다.')
+        alert(formatFetchError(err))
       }
     },
-    [loadMenus, loadAdmin],
+    [loadMenus, loadAdmin, apiOnline],
   )
 
   const handleUpdateOrderStatus = useCallback(
     async (orderId, status) => {
+      if (!apiOnline) {
+        alert(OFFLINE_ACTION_MESSAGE)
+        return
+      }
+
       try {
         await patchOrderStatus(orderId, status)
         await loadAdmin()
       } catch (err) {
-        alert(err instanceof Error ? err.message : '상태 변경에 실패했습니다.')
+        alert(formatFetchError(err))
       }
     },
-    [loadAdmin],
+    [loadAdmin, apiOnline],
   )
 
   const activeOrders = getActiveOrders(orders)
@@ -175,7 +218,11 @@ function App() {
   return (
     <div className="app">
       <Header activePage={page} onNavigate={handleNavigate} />
-      {error && <p className="app-error">{error}</p>}
+      {notice && (
+        <p className="app-notice" role="status">
+          {notice}
+        </p>
+      )}
       <div className={page === 'order' ? 'app__page app__page--active' : 'app__page app__page--hidden'}>
         <OrderPage
           menus={menus}

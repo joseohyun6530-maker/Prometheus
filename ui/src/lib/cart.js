@@ -55,18 +55,18 @@ export function addToCart(cart, menu, selectedOptionIds) {
   const selectedOptions = getSelectedOptions(menu.options, normalizedOptionIds)
   const key = cartLineKey(menu.id, normalizedOptionIds)
   const unitPrice = calcUnitPrice(menu, normalizedOptionIds)
-  const existing = cart.find((line) => line.key === key)
+  const existingIndex = cart.findIndex((line) => line.key === key)
 
-  if (existing) {
-    return cart.map((line) =>
-      line.key === key
-        ? {
-            ...line,
-            quantity: line.quantity + 1,
-            lineTotal: (line.quantity + 1) * line.unitPrice,
-          }
-        : line,
-    )
+  if (existingIndex !== -1) {
+    return cart.map((line, index) => {
+      if (index !== existingIndex) return line
+      const quantity = line.quantity + 1
+      return {
+        ...line,
+        quantity,
+        lineTotal: unitPrice * quantity,
+      }
+    })
   }
 
   return [

@@ -44,8 +44,10 @@ export function OrderListSection({ orders, onUpdateStatus }) {
                 ))}
               </ul>
               <div className="order-card__footer">
-                <span className="order-card__total-label">주문 금액</span>
-                <strong className="order-card__total">{formatPrice(order.totalAmount)}</strong>
+                <div className="order-card__total-wrap">
+                  <span className="order-card__total-label">주문 금액</span>
+                  <strong className="order-card__total">{formatPrice(order.totalAmount)}</strong>
+                </div>
                 {order.status === 'RECEIVED' && (
                   <button
                     type="button"

@@ -1,3 +1,5 @@
+import { formatFetchError } from './errors.js'
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1'
 
 /**
@@ -5,13 +7,20 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api
  * @param {RequestInit} [options]
  */
 export async function apiFetch(path, options = {}) {
-  const res = await fetch(`${API_BASE}${path}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-    ...options,
-  })
+  let res
+  try {
+    res = await fetch(`${API_BASE}${path}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+      ...options,
+    })
+  } catch (err) {
+    const error = new Error(formatFetchError(err))
+    error.isNetworkError = true
+    throw error
+  }
 
   const data = await res.json().catch(() => ({}))
 

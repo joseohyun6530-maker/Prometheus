@@ -12,7 +12,6 @@
 .app {
   display: flex;
   flex-direction: column;
-  min-height: 100%;
   width: 100%;
   text-align: left;
 }
@@ -28,16 +27,16 @@
   min-height: 0;
 }
 
-.app-error,
+.app-notice,
 .page-message {
   margin: 0;
   padding: 0.75rem 1.5rem;
   font-size: 0.95rem;
 }
 
-.app-error {
-  color: #b91c1c;
-  background: #fee2e2;
+.app-notice {
+  color: #92400e;
+  background: #fef3c7;
 }
 
 .page-message {
@@ -63,7 +62,7 @@
 .header__nav {
   display: flex;
   gap: 0.5rem;
-  padding: 0.25rem;
+  padding: 0.35rem;
   background: var(--blue-600);
   border-radius: var(--radius);
 }
@@ -73,8 +72,8 @@
   font-size: 0.95rem;
   font-weight: 600;
   color: #ffffff;
-  background: transparent;
-  border: 2px solid rgba(255, 255, 255, 0.45);
+  background: var(--blue-600);
+  border: 2px solid var(--blue-700);
   border-radius: var(--radius);
   cursor: pointer;
   transition:
@@ -83,9 +82,10 @@
     color 0.15s;
 }
 
-.nav-btn:hover {
+.nav-btn:hover:not(.nav-btn--active) {
   background: var(--blue-700);
-  border-color: rgba(255, 255, 255, 0.7);
+  border-color: var(--blue-700);
+  color: #ffffff;
 }
 
 .nav-btn--active {
@@ -270,14 +270,16 @@
   background: #fafafa;
   min-height: 160px;
   display: grid;
-  grid-template-columns: 1fr minmax(200px, 280px);
+  grid-template-columns: 1fr minmax(220px, 300px);
   gap: 0;
+  align-items: stretch;
 }
 
 .cart__items {
-  padding: 1.25rem;
+  padding: 1.25rem 1.5rem;
   border-right: 1px solid var(--border);
   min-height: 120px;
+  background: #fafafa;
 }
 
 .cart__empty {
@@ -293,11 +295,11 @@
 }
 
 .cart__line {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 6.5rem;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.65rem 0;
+  column-gap: 1.5rem;
+  padding: 0.75rem 0;
   border-bottom: 1px dashed var(--border);
   font-size: 0.9rem;
 }
@@ -306,14 +308,15 @@
   border-bottom: none;
 }
 
-.cart__line-info {
-  min-width: 0;
-  padding-right: 0.25rem;
-}
-
 .cart__line-name {
   color: var(--text);
-  line-height: 1.35;
+  line-height: 1.4;
+  word-break: keep-all;
+}
+
+.cart__line-qty {
+  font-weight: 600;
+  color: var(--text-muted);
 }
 
 .cart__line-qty {
@@ -347,16 +350,17 @@
   text-align: right;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  justify-self: end;
 }
 
 .cart__summary {
-  padding: 1.25rem;
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: stretch;
-  gap: 1.25rem;
+  gap: 1.5rem;
   background: #fff;
   border-radius: 0 var(--radius) var(--radius) 0;
 }
@@ -406,8 +410,12 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 1.75rem;
+  gap: 1.5rem;
   padding: 1.5rem;
+}
+
+.admin-section {
+  padding: 0;
 }
 
 .admin-section__title {
@@ -431,12 +439,13 @@
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
+  justify-content: flex-start;
   gap: 0.35rem 0.5rem;
   padding: 1rem 1.25rem;
   background: #f9fafb;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  font-size: 0.95rem;
+  font-size: 1rem;
 }
 
 .dashboard-bar__item {
@@ -467,12 +476,19 @@
   gap: 1rem;
 }
 
+@media (max-width: 720px) {
+  .inventory-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .inventory-card {
-  padding: 1rem;
+  padding: 1.25rem 1rem;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface);
   text-align: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .inventory-card__name {
@@ -627,9 +643,16 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
   gap: 0.75rem 1rem;
   padding-top: 0.75rem;
   border-top: 1px dashed var(--border);
+}
+
+.order-card__total-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
 }
 
 .order-card__total-label {
@@ -638,8 +661,7 @@
 }
 
 .order-card__total {
-  margin-right: auto;
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   font-variant-numeric: tabular-nums;
   color: #111827;
 }

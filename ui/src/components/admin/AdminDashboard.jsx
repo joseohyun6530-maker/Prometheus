@@ -14,7 +14,7 @@ export function AdminDashboard({ stats }) {
       <h2 id="dashboard-heading" className="admin-section__title">
         관리자 대시보드
       </h2>
-      <div className="dashboard-bar">
+      <div className="dashboard-bar" role="group" aria-label="주문 현황 요약">
         {items.map((item, index) => (
           <span key={item.label} className="dashboard-bar__item">
             {index > 0 && <span className="dashboard-bar__sep">/</span>}

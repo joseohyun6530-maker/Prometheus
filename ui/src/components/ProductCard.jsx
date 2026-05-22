@@ -34,7 +34,8 @@ export function ProductCard({
 
   const handleAdd = () => {
     if (!canAdd) return
-    onAdd(menu, selectedOptionIds)
+    onAdd(menu, [...selectedOptionIds])
+    setSelectedOptionIds([])
   }
 
   return (

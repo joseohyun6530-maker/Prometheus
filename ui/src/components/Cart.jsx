@@ -26,7 +26,8 @@ export function Cart({ cart, onOrder }) {
                 <li key={line.key} className="cart__line">
                   <span className="cart__line-name">
                     {line.name}
-                    {formatOptionSuffix(line.selectedOptions)} X {line.quantity}
+                    {formatOptionSuffix(line.selectedOptions)}
+                    <span className="cart__line-qty"> X {line.quantity}</span>
                   </span>
                   <span className="cart__line-price">{formatPrice(line.lineTotal)}</span>
                 </li>

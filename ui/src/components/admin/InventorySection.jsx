@@ -1,4 +1,4 @@
-import { getStockStatusClass } from '../../lib/inventory.js'
+import { getStockStatus, getStockStatusClass } from '../../lib/inventory.js'
 
 /**
  * @param {{
@@ -27,6 +27,7 @@ export function InventorySection({ items, onAdjustInventory }) {
         {items.map((item) => {
           const qty = Number(item.stock_quantity)
           const displayQty = Number.isFinite(qty) ? qty : 0
+          const statusLabel = item.stock_status || getStockStatus(displayQty)
 
           return (
             <article key={item.menu_id} className="inventory-card">
@@ -36,15 +37,15 @@ export function InventorySection({ items, onAdjustInventory }) {
                   {displayQty}
                   <span className="inventory-card__unit">개</span>
                 </span>
-                <span className={`stock-badge ${getStockStatusClass(item.stock_status)}`}>
-                  {item.stock_status}
+                <span className={`stock-badge ${getStockStatusClass(statusLabel)}`}>
+                  {statusLabel}
                 </span>
               </p>
               <div className="inventory-card__actions">
                 <button
                   type="button"
                   className="btn btn--outline inventory-card__btn"
-                  aria-label={`${item.name} 재고 감소`}
+                  aria-label={`${item.name} 재고 1개 감소`}
                   onClick={() => onAdjustInventory(item.menu_id, -1)}
                   disabled={displayQty <= 0}
                 >
@@ -53,7 +54,7 @@ export function InventorySection({ items, onAdjustInventory }) {
                 <button
                   type="button"
                   className="btn btn--primary inventory-card__btn"
-                  aria-label={`${item.name} 재고 증가`}
+                  aria-label={`${item.name} 재고 1개 증가`}
                   onClick={() => onAdjustInventory(item.menu_id, 1)}
                 >
                   +
