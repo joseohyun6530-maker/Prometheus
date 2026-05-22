@@ -44,8 +44,13 @@ copy .env.example .env
 | 항목 | 값 |
 |------|-----|
 | **Root Directory** | `server` |
-| **Build Command** | `npm install && npm run db:migrate` |
-| **Start Command** | `npm start` |
+| **Build Command** | `npm install` (`npm instal` 오타 주의) |
+| **Start Command** | `npm start` (`db:migrate` 후 서버 시작) |
+
+**주의:** `node index.js`만 쓰려면 Root Directory가 반드시 **`server`** 여야 합니다.  
+`src/server`처럼 잘못 지정하면 `Cannot find module .../index.js` 오류가 납니다.
+
+`npm start`는 내부적으로 `node src/index.js`를 실행합니다.
 
 또는 저장소 루트의 `render.yaml` Blueprint를 사용합니다.
 
