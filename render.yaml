@@ -4,6 +4,7 @@ services:
     name: cozy-api
     runtime: node
     rootDir: server
+    # db:migrate는 Build에 넣지 말 것 — Render 빌드 환경에서 DB Internal URL 접속 불가
     buildCommand: npm install
     startCommand: npm start
     envVars:

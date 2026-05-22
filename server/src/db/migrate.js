@@ -89,9 +89,16 @@ async function runSeed() {
 }
 
 async function main() {
+  if (config.isDeployed && !config.databaseUrl) {
+    throw new Error(
+      'DATABASE_URL이 없습니다. Render: PostgreSQL → Connections → Link Resource.',
+    )
+  }
   console.log('Connecting to PostgreSQL...')
   await ensureDatabase()
-  getPool()
+  const pool = getPool()
+  await pool.query('SELECT 1')
+  console.log('PostgreSQL connection OK.')
   await runSchema()
   await runSeed()
   await closePool()
@@ -99,6 +106,18 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error('Migration failed:', err.message)
+  const message = err instanceof Error ? err.message : String(err)
+  console.error('Migration failed:', message || err)
+  if (err instanceof Error && err.stack) {
+    console.error(err.stack)
+  }
+  if (process.env.RENDER === 'true') {
+    console.error(
+      'Render: PostgreSQL를 Web Service에 Link하고, Environment의 localhost DATABASE_URL은 삭제하세요.',
+    )
+    if (process.env.npm_lifecycle_event === 'db:migrate') {
+      console.error('Build Command에는 db:migrate를 넣지 말고 `npm install`만 사용하세요.')
+    }
+  }
   process.exit(1)
 })

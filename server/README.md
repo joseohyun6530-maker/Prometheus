@@ -44,8 +44,8 @@ copy .env.example .env
 | 항목 | 값 |
 |------|-----|
 | **Root Directory** | `server` |
-| **Build Command** | `npm install` (`npm instal` 오타 주의) |
-| **Start Command** | `npm start` (`db:migrate` 후 서버 시작) |
+| **Build Command** | **`npm install` 만** (`npm run db:migrate` 넣으면 빌드 실패 — DB는 빌드 네트워크에서 Internal URL 접속 불가) |
+| **Start Command** | **`npm start`** (`db:migrate` 후 서버 시작) |
 
 **주의:** `node index.js`만 쓰려면 Root Directory가 반드시 **`server`** 여야 합니다.  
 `src/server`처럼 잘못 지정하면 `Cannot find module .../index.js` 오류가 납니다.
@@ -57,7 +57,7 @@ copy .env.example .env
 **`Exited with status 1`이 나올 때**
 
 1. `DATABASE_URL`이 Render PostgreSQL **Internal/External URL**로 설정됐는지 확인
-2. Build 단계에서 `db:migrate`가 성공했는지 로그 확인 (테이블 없으면 API 시작 시 종료)
+2. Build Command에 `db:migrate`가 있으면 제거 (마이그레이션은 Start의 `npm start`에서만 실행)
 3. Root Directory가 `server`가 아니면 `npm start`가 실패함
 
 ## PostgreSQL 설정
